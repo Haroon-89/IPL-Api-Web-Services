@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Team Records{% endblock %}
+{% block content %}
+<h1>Team Records</h1>
+<form action="/team_records" method="get">
+    <label for="team">Select Team</label>
+    <select name="team" id="team">
+        {% for team in teams %}
+        <option value="{{ team }}" {% if team==selected_team %}selected{% endif %}>{{ team }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Get Records</button>
+</form>
+{% if error %}
+<p class="error">{{ error }}</p>
+{% endif %}
+{% if result and selected_team in result %}
+<div class="section">
+    <h2>Overall Records for {{ selected_team }}</h2>
+    <table>
+        <tr>
+            <th>Metric</th>
+            <th>Value</th>
+        </tr>
+        <tr>
+            <td>Matches Played</td>
+            <td>{{ result[selected_team].overall.matchesplayed }}</td>
+        </tr>
+        <tr>
+            <td>Won</td>
+            <td>{{ result[selected_team].overall.won }}</td>
+        </tr>
+        <tr>
+            <td>Lost</td>
+            <td>{{ result[selected_team].overall.loss }}</td>
+        </tr>
+        <tr>
+            <td>No Result</td>
+            <td>{{ result[selected_team].overall.noResult }}</td>
+        </tr>
+        <tr>
+            <td>Titles Won</td>
+            <td>{{ result[selected_team].overall.title }}</td>
+        </tr>
+    </table>
+</div>
+<div class="section">
+    <h2>Records Against Other Teams</h2>
+    {% for opp, stats in result[selected_team].against.items() %}
+    <h3>vs {{ opp }}</h3>
+    <table>
+        <tr>
+            <th>Metric</th>
+            <th>Value</th>
+        </tr>
+        <tr>
+            <td>Matches Played</td>
+            <td>{{ stats.matchesplayed }}</td>
+        </tr>
+        <tr>
+            <td>Won</td>
+            <td>{{ stats.won }}</td>
+        </tr>
+        <tr>
+            <td>Lost</td>
+            <td>{{ stats.loss }}</td>
+        </tr>
+        <tr>
+            <td>No Result</td>
+            <td>{{ stats.noResult }}</td>
+        </tr>
+    </table>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

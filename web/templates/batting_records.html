@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Batting Records{% endblock %}
+{% block content %}
+<h1>Batsman Records</h1>
+<form action="/batting-records" method="get">
+    <label for="batsman">Enter Batsman Name (e.g., Virat Kohli)</label>
+    <input type="text" id="batsman" name="batsman" value="{{ selected_batsman or '' }}" placeholder="Full name">
+    <button type="submit">Get Batting Stats</button>
+</form>
+<p style="text-align: center; font-style: italic;">Tip: Use exact names as used in IPL Dataset e.g,"V Kohli".</p>
+{% if error %}
+<p class="error">{{ error }}</p>
+{% endif %}
+{% if result and selected_batsman in result %}
+<div class="section">
+    <h2>All-Time Stats for {{ selected_batsman }}</h2>
+    <table>
+        <tr>
+            <th>Metric</th>
+            <th>Value</th>
+        </tr>
+        <tr>
+            <td>Innings</td>
+            <td>{{ result[selected_batsman].all.innings }}</td>
+        </tr>
+        <tr>
+            <td>Runs</td>
+            <td>{{ result[selected_batsman].all.runs }}</td>
+        </tr>
+        <tr>
+            <td>Average</td>
+            <td>{{ "%.2f"|format(result[selected_batsman].all.avg) if result[selected_batsman].all.avg is not none else
+                'N/A' }}</td>
+        </tr>
+        <tr>
+            <td>Strike Rate</td>
+            <td>{{ "%.2f"|format(result[selected_batsman].all.strikeRate) if result[selected_batsman].all.strikeRate is
+                not none else 'N/A' }}</td>
+        </tr>
+        <tr>
+            <td>Fifties</td>
+            <td>{{ result[selected_batsman].all.fifties }}</td>
+        </tr>
+        <tr>
+            <td>Hundreds</td>
+            <td>{{ result[selected_batsman].all.hundreds }}</td>
+        </tr>
+        <tr>
+            <td>Highest Score</td>
+            <td>{{ result[selected_batsman].all.highest_score }}</td>
+        </tr>
+        <tr>
+            <td>MoM Awards</td>
+            <td>{{ result[selected_batsman].all.mom }}</td>
+        </tr>
+    </table>
+</div>
+{% if against_top3 %}
+<div class="section">
+    <h2>Vs Specific Teams (Top 3)</h2>
+    {% for team, stats in against_top3 %}
+    <h3>vs {{ team }}</h3>
+    <p>Runs: {{ stats.runs }}, Avg: {{ "%.2f"|format(stats.avg) if stats.avg is not none else 'N/A' }}</p>
+    {% endfor %}
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}

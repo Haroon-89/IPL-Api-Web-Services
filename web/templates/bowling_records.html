@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Bowling Records{% endblock %}
+{% block content %}
+<h1>Bowler Records</h1>
+<form action="/bowling-records" method="get">
+    <label for="bowler">Enter Bowler Name (e.g., Jasprit Bumrah)</label>
+    <input type="text" id="bowler" name="bowler" value="{{ selected_bowler or '' }}" placeholder="Full name">
+    <button type="submit">Get Bowling Stats</button>
+</form>
+<p style="text-align: center; font-style: italic;">Tip: Use exact names as used in IPL Dataset e.g,"JJ Bumrah".</p>
+{% if error %}
+<p class="error">{{ error }}</p>
+{% endif %}
+{% if result and selected_bowler in result %}
+<div class="section">
+    <h2>All-Time Stats for {{ selected_bowler }}</h2>
+    <table>
+        <tr>
+            <th>Metric</th>
+            <th>Value</th>
+        </tr>
+        <tr>
+            <td>Innings</td>
+            <td>{{ result[selected_bowler].all.innings }}</td>
+        </tr>
+        <tr>
+            <td>Wickets</td>
+            <td>{{ result[selected_bowler].all.wicket }}</td>
+        </tr>
+        <tr>
+            <td>Economy</td>
+            <td>{{ "%.2f"|format(result[selected_bowler].all.economy) if result[selected_bowler].all.economy is not none
+                else 'N/A' }}</td>
+        </tr>
+        <tr>
+            <td>Average</td>
+            <td>{{ "%.2f"|format(result[selected_bowler].all.average) if result[selected_bowler].all.average is not none
+                else 'N/A' }}</td>
+        </tr>
+        <tr>
+            <td>Strike Rate</td>
+            <td>{{ "%.2f"|format(result[selected_bowler].all.strikeRate) if result[selected_bowler].all.strikeRate is
+                not none else 'N/A' }}</td>
+        </tr>
+        <tr>
+            <td>Best Figures</td>
+            <td>{{ result[selected_bowler].all.best_figure or 'N/A' }}</td>
+        </tr>
+        <tr>
+            <td>3+ Wicket Hauls</td>
+            <td>{{ result[selected_bowler].all['3+w'] }}</td>
+        </tr>
+        <tr>
+            <td>MoM Awards</td>
+            <td>{{ result[selected_bowler].all.mom }}</td>
+        </tr>
+    </table>
+</div>
+{% if against_top3 %}
+<div class="section">
+    <h2>Vs Specific Teams (Top 3)</h2>
+    {% for team, stats in against_top3 %}
+    <h3>vs {{ team }}</h3>
+    <p>Wickets: {{ stats.wicket }}, Econ: {{ "%.2f"|format(stats.economy) if stats.economy is not none else 'N/A' }}</p>
+    {% endfor %}
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}

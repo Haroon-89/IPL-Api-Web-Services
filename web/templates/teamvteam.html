@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Team vs Team{% endblock %}
+{% block content %}
+<h1>Team vs Team Records</h1>
+<form action="/teamvteam" method="get">
+    <label for="team1">Select Team 1</label>
+    <select id="team1" name="team1">
+        {% for team in teams %}
+        <option value="{{ team }}" {% if team==selected_team1 %}selected{% endif %}>{{ team }}</option>
+        {% endfor %}
+    </select>
+    <label for="team2">Select Team 2</label>
+    <select id="team2" name="team2">
+        {% for team in teams %}
+        <option value="{{ team }}" {% if team==selected_team2 %}selected{% endif %}>{{ team }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Get Head-to-Head Record</button>
+</form>
+{% if error %}
+<p class="error">{{ error }}</p>
+{% endif %}
+{% if result and 'total_matches' in result %}
+<div class="section">
+    <h2>Head-to-Head: {{ selected_team1 }} vs {{ selected_team2 }}</h2>
+    <table>
+        <tr>
+            <th>Metric</th>
+            <th>Value</th>
+        </tr>
+        <tr>
+            <td>Total Matches</td>
+            <td>{{ result.total_matches }}</td>
+        </tr>
+        <tr>
+            <td>{{ selected_team1 }} Wins</td>
+            <td>{{ result[selected_team1] if selected_team1 in result else 0 }}</td>
+        </tr>
+        <tr>
+            <td>{{ selected_team2 }} Wins</td>
+            <td>{{ result[selected_team2] if selected_team2 in result else 0 }}</td>
+        </tr>
+        <tr>
+            <td>No Results</td>
+            <td>{{ result.no_results }}</td>
+        </tr>
+    </table>
+</div>
+{% endif %}
+{% endblock %}
