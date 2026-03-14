@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import json
+from thefuzz import process
 
 class NPEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -8,7 +9,7 @@ class NPEncoder(json.JSONEncoder):
             return int(obj)
         if isinstance(obj, np.floating):
             if np.isnan(obj) or np.isinf(obj):
-                return None  # Handles NaN/inf as null in JSON
+                return None
             return float(obj)
         if isinstance(obj, np.ndarray):
             return obj.tolist()
@@ -25,15 +26,61 @@ ball_withmatch.drop(columns=['id'], inplace=True)
 
 batter_data = ball_withmatch.copy()
 
+# ─── Fuzzy Search ─────────────────────────────────────────────────────────────
+
+def findPlayer(name, player_list):
+    # First try exact match (case insensitive)
+    name_lower = name.lower().strip()
+    for player in player_list:
+        if player.lower().strip() == name_lower:
+            return player
+    
+    # Then try last name exact match
+    # e.g "Virat Kohli" → last name "Kohli"
+    name_parts = name_lower.split()
+    if len(name_parts) >= 2:
+        last_name = name_parts[-1]  # "kohli"
+        first_initial = name_parts[0][0]  # "v"
+        
+        # Look for "X Kohli" pattern in player list
+        candidates = []
+        for player in player_list:
+            player_parts = player.lower().strip().split()
+            if len(player_parts) >= 2:
+                # Last name matches
+                if player_parts[-1] == last_name:
+                    # First initial matches
+                    if player_parts[0][0] == first_initial:
+                        candidates.append(player)
+        
+        if len(candidates) == 1:
+            return candidates[0]  # Only one match, return it
+        elif len(candidates) > 1:
+            # Multiple matches, use fuzzy on candidates only
+            result = process.extractOne(name, candidates)
+            if result:
+                return result[0]
+    
+    # Fall back to fuzzy on full list
+    result = process.extractOne(name, player_list)
+    if result is None:
+        return name
+    match, score = result
+    if score >= 70:
+        return match
+    return name
+
+# ─── Teams ────────────────────────────────────────────────────────────────────
+
 def teamsAPI():
     teams = np.unique(ipl_matches[['team1', 'team2']])
     team_dict = {
-        'teams' : teams.tolist()
+        'teams': teams.tolist()
     }
     return team_dict
 
 def teamVteamAPI(team1, team2):
-    matches = ipl_matches[((ipl_matches['team1'] == team1) & (ipl_matches['team2'] == team2)) | 
+    matches = ipl_matches[((ipl_matches['team1'] == team1) & (ipl_matches['team2'] == team2)) |
                           ((ipl_matches['team1'] == team2) & (ipl_matches['team2'] == team1))]
     total_matches = matches.shape[0]
     matches_won_team1 = matches[matches['winner'] == team1].shape[0]
@@ -48,8 +95,8 @@ def teamVteamAPI(team1, team2):
     return response
 
 def team1vsteam2(team, team2):
-    df = ipl_matches[((ipl_matches['team1'] == team) & (ipl_matches['team2'] == team2)) | \
-                 ((ipl_matches['team2'] == team) & (ipl_matches['team1'] == team2))].copy()
+    df = ipl_matches[((ipl_matches['team1'] == team) & (ipl_matches['team2'] == team2)) |
+                     ((ipl_matches['team2'] == team) & (ipl_matches['team1'] == team2))].copy()
     mp = df.shape[0]
     won = df[df.winner == team].shape[0]
     nr = df[df.winner.isna()].shape[0]
@@ -72,6 +119,8 @@ def teamAPI(team, matches=ipl_matches):
     against = {team2: team1vsteam2(team, team2) for team2 in TEAMS}
     data = {team: {'overall': self_record, 'against': against}}
     return json.dumps(data, cls=NPEncoder)
+
+# ─── Batting ──────────────────────────────────────────────────────────────────
 
 def batsmanRecord(batsman, df):
     if df.empty:
@@ -151,7 +200,7 @@ def batsmanVsTeam(batsman, team, df):
     return batsmanRecord(batsman, df)
 
 def batsmanAPI(batsman, balls=batter_data):
-    df = balls[balls.inning.isin([1,2])]  # Excluding Super overs
+    df = balls[balls.inning.isin([1, 2])]
     self_record = batsmanRecord(batsman, df=df)
     TEAMS = ipl_matches.team1.unique()
     against = {team: batsmanVsTeam(batsman, team, df) for team in TEAMS}
@@ -160,6 +209,8 @@ def batsmanAPI(batsman, balls=batter_data):
                   'against': against}
     }
     return json.dumps(data, cls=NPEncoder)
+
+# ─── Bowling ──────────────────────────────────────────────────────────────────
 
 bowler_data = batter_data.copy()
 
@@ -258,7 +309,7 @@ def bowlerVsTeam(bowler, team, df):
     return bowlerRecord(bowler, df)
 
 def bowlerAPI(bowler, balls=bowler_data):
-    df = balls[balls.inning.isin([1,2])] # Excluding Super overs
+    df = balls[balls.inning.isin([1, 2])]
     self_record = bowlerRecord(bowler, df=df)
     TEAMS = ipl_matches.team1.unique()
     against = {team: bowlerVsTeam(bowler, team, df) for team in TEAMS}

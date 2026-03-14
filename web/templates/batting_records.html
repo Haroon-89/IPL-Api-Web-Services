@@ -7,7 +7,7 @@
     <input type="text" id="batsman" name="batsman" value="{{ selected_batsman or '' }}" placeholder="Full name">
     <button type="submit">Get Batting Stats</button>
 </form>
-<p style="text-align: center; font-style: italic;">Tip: Use exact names as used in IPL Dataset e.g,"V Kohli".</p>
+<p style="text-align: center; font-style: italic;">Tip: You can use full names e.g, "Virat Kohli" or "MS Dhoni".</p>
 {% if error %}
 <p class="error">{{ error }}</p>
 {% endif %}
@@ -29,13 +29,11 @@
         </tr>
         <tr>
             <td>Average</td>
-            <td>{{ "%.2f"|format(result[selected_batsman].all.avg) if result[selected_batsman].all.avg is not none else
-                'N/A' }}</td>
+            <td>{{ "%.2f"|format(result[selected_batsman].all.avg) if result[selected_batsman].all.avg is not none else 'N/A' }}</td>
         </tr>
         <tr>
             <td>Strike Rate</td>
-            <td>{{ "%.2f"|format(result[selected_batsman].all.strikeRate) if result[selected_batsman].all.strikeRate is
-                not none else 'N/A' }}</td>
+            <td>{{ "%.2f"|format(result[selected_batsman].all.strikeRate) if result[selected_batsman].all.strikeRate is not none else 'N/A' }}</td>
         </tr>
         <tr>
             <td>Fifties</td>

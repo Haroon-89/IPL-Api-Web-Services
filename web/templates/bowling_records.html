@@ -7,7 +7,7 @@
     <input type="text" id="bowler" name="bowler" value="{{ selected_bowler or '' }}" placeholder="Full name">
     <button type="submit">Get Bowling Stats</button>
 </form>
-<p style="text-align: center; font-style: italic;">Tip: Use exact names as used in IPL Dataset e.g,"JJ Bumrah".</p>
+<p style="text-align: center; font-style: italic;">Tip: You can use full names e.g, "Jasprit Bumrah" or "MS Dhoni".</p>
 {% if error %}
 <p class="error">{{ error }}</p>
 {% endif %}
@@ -29,18 +29,15 @@
         </tr>
         <tr>
             <td>Economy</td>
-            <td>{{ "%.2f"|format(result[selected_bowler].all.economy) if result[selected_bowler].all.economy is not none
-                else 'N/A' }}</td>
+            <td>{{ "%.2f"|format(result[selected_bowler].all.economy) if result[selected_bowler].all.economy is not none else 'N/A' }}</td>
         </tr>
         <tr>
             <td>Average</td>
-            <td>{{ "%.2f"|format(result[selected_bowler].all.average) if result[selected_bowler].all.average is not none
-                else 'N/A' }}</td>
+            <td>{{ "%.2f"|format(result[selected_bowler].all.average) if result[selected_bowler].all.average is not none else 'N/A' }}</td>
         </tr>
         <tr>
             <td>Strike Rate</td>
-            <td>{{ "%.2f"|format(result[selected_bowler].all.strikeRate) if result[selected_bowler].all.strikeRate is
-                not none else 'N/A' }}</td>
+            <td>{{ "%.2f"|format(result[selected_bowler].all.strikeRate) if result[selected_bowler].all.strikeRate is not none else 'N/A' }}</td>
         </tr>
         <tr>
             <td>Best Figures</td>

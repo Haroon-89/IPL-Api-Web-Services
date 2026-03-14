@@ -1,6 +1,8 @@
-Flask
-numpy
+flask
 pandas
+numpy
 requests
-matplotlib
-scikit-learn
+flask-caching
+flask-limiter
+thefuzz
+python-Levenshtein
